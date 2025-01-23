@@ -188,21 +188,21 @@ class positionController (Node):
 
 
         # Switch movement direction if necessary to minimize heading error
-        if (abs(front_heading_error) > abs(bkward_heading_error) and (self.movement_direction == 1)):
+        # if (abs(front_heading_error) > abs(bkward_heading_error) and (self.movement_direction == 1)):
             
-            self.movement_direction = -1 
-            self.robot_pose = self.move_backward()
+        #     self.movement_direction = -1 
+        #     self.robot_pose = self.move_backward()
 
-            self.get_logger().warn('Switching to backwards orientation')
+        #     self.get_logger().warn('Switching to backwards orientation')
 
 
-        # Switch movement direction if necessary to minimize heading error
-        if (abs(front_heading_error) < abs(bkward_heading_error) and (self.movement_direction == -1)): 
+        # # Switch movement direction if necessary to minimize heading error
+        # if (abs(front_heading_error) < abs(bkward_heading_error) and (self.movement_direction == -1)): 
             
-            self.movement_direction = 1 
-            self.robot_pose = self.move_front()
+        #     self.movement_direction = 1 
+        #     self.robot_pose = self.move_front()
 
-            self.get_logger().warn('Switching to foward orientation')
+        #     self.get_logger().warn('Switching to foward orientation')
 
 
         # Calculate orientation error
