@@ -37,8 +37,6 @@ class positionController (Node):
     robot_state = -1                            # Current state of the robot, starts in random value
     autonomous_state = -1                       # Current state of the autonomous machine states 
 
-    movement_direction = 1                      # Direction of movement: 1 for forward, -1 for backward  
-
     robot_quat = Quaternion()                   # Quaternion representing the orientation of the robot  
     robot_pose = Pose2D()                       # Pose of the robot (position and orientation)
 
@@ -47,16 +45,13 @@ class positionController (Node):
 
     cmd_vel = Twist()                           # Twist message for velocity commands
 
-    rotation_quat = [0.0, 0.0, 0.0, 0.0]        # Quaternion used for rotation
     robot_quat = [0.0, 0.0, 0.0, 0.0]           # Quaternion representing the orientation of the robot
-
 
     # main machine states  
     ROBOT_MANUAL = 1000
     ROBOT_AUTONOMOUS = 1000
     ROBOT_INIT = 1000
     ROBOT_EMERGENCY = 1000
-
 
     # autonomous machine state 
     ROBOT_MOVING_TO_GOAL = 10 
@@ -95,45 +90,6 @@ class positionController (Node):
         param.get_params(self)
 
         self.add_on_set_parameters_callback(param.parameters_callback)    
-
-
-
-
-    def move_backward(self): 
-
-        # Convert 180-degree rotation to quaternion
-        rotation_180_degree_to_quat = tf3d.euler.euler2quat(0, 0, math.pi)   # Quaternion in w, x, y z (real, then vector) format
-        
-        # Assign quaternion components for rotation
-        self.rotation_quat[0] = rotation_180_degree_to_quat[1]
-        self.rotation_quat[1] = rotation_180_degree_to_quat[2]
-        self.rotation_quat[2] = rotation_180_degree_to_quat[3]
-        self.rotation_quat[3] = rotation_180_degree_to_quat[0]
-
-        # Get current orientation of the robot
-        self.robot_quat[0] = self.odom_pose.orientation.x 
-        self.robot_quat[1] = self.odom_pose.orientation.y 
-        self.robot_quat[2] = self.odom_pose.orientation.z
-        self.robot_quat[3] = self.odom_pose.orientation.w 
-
-        # Calculate the quaternion for the backward movement
-        backwart_quat = []
-        backwart_quat = quaternion_multiply(self.robot_quat, self.rotation_quat)
-
-
-        backwart_pose = Pose2D()
-        backwart_pose.x = self.odom_pose.position.x 
-        backwart_pose.y = self.odom_pose.position.y 
-
-        # Calculate theta for the backward pose
-        backwart_pose.theta = tf3d.euler.quat2euler([backwart_quat[3], 
-                                                    backwart_quat[0], 
-                                                    backwart_quat[1], 
-                                                    backwart_quat[2]])[2]
-
-
-        return backwart_pose
-    
 
 
 
@@ -177,32 +133,8 @@ class positionController (Node):
         self.error_linear = math.hypot(dx, dy)
         self.error_angle = math.atan2(dy, dx)
 
-        # Calculate heading errors for backward movement
-        self.bkward_pose = self.move_backward()
-        bkward_heading_error = reduce_angle(self.error_angle - self.bkward_pose.theta)
 
-
-        # Calculate heading errors for forward movement
-        self.front_pose = self.move_front()
-        front_heading_error = reduce_angle(self.error_angle - self.front_pose.theta)
-
-
-        # Switch movement direction if necessary to minimize heading error
-        # if (abs(front_heading_error) > abs(bkward_heading_error) and (self.movement_direction == 1)):
-            
-        #     self.movement_direction = -1 
-        #     self.robot_pose = self.move_backward()
-
-        #     self.get_logger().warn('Switching to backwards orientation')
-
-
-        # # Switch movement direction if necessary to minimize heading error
-        # if (abs(front_heading_error) < abs(bkward_heading_error) and (self.movement_direction == -1)): 
-            
-        #     self.movement_direction = 1 
-        #     self.robot_pose = self.move_front()
-
-        #     self.get_logger().warn('Switching to foward orientation')
+        self.robot_pose = self.move_front()
 
 
         # Calculate orientation error
@@ -217,7 +149,7 @@ class positionController (Node):
         # Calculate linear velocity based on orientation error
         if self.error_linear != 0:
 
-            self.cmd_vel.linear.x = ((1-abs(orientation_error)/math.pi)*(self.MAX_LINEAR_VEL - self.MIN_LINEAR_VEL) + self.MIN_LINEAR_VEL) * self.movement_direction
+            self.cmd_vel.linear.x = ((1-abs(orientation_error)/math.pi)*(self.MAX_LINEAR_VEL - self.MIN_LINEAR_VEL) + self.MIN_LINEAR_VEL) 
             # self.cmd_vel.linear.x = linear_vel.output(self.error_linear)
 
         else: 
