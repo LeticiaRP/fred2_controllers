@@ -116,14 +116,6 @@ class positionController (Node):
 
     def position_control (self): 
         
-        # Determine the direction of movement based on the movement_direction variable
-        if self.movement_direction == 1: 
-            
-            self.robot_pose = self.move_front()
-
-        elif self.movement_direction == -1: 
-            
-            self.robot_pose = self.move_backward()
         
 
         # Calculate the error between the goal pose and the robot pose
